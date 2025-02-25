@@ -1,76 +1,98 @@
-import React, { useEffect, useState } from "react";
-import { pb } from '../lib/pocketbase';
+import React, { useState, useEffect } from 'react';
+import PocketBase from 'pocketbase';
 import { FaBath, FaBed, FaHeart, FaRuler } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
+
+const pb = new PocketBase('http://127.0.0.1:8090');
 
 const FeaturedProperties = ({ setSelectedProperty }) => {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProperties = async () => {
+    let isActive = true;
+    
+    const fetchFeaturedProperties = async () => {
       try {
-        // Fetch only properties marked as featured
-        const records = await pb.collection('properties').getList(1, 6, {
+        setLoading(true);
+        // Use the $autoCancel: false option to prevent auto-cancellation
+        const records = await pb.collection('properties').getList(1, 3, {
+          filter: 'featured = true',
           sort: '-created',
-          filter: 'featured=true',
-          $autoCancel: false,
+          $autoCancel: false
         });
         
-        const propertiesWithImages = records.items.map(property => ({
-          id: property.id,
-          title: property.title || 'No Title',
-          price: property.price || 'Price not set',
-          location: property.location || 'Location not set',
-          beds: property.beds || 0,
-          baths: property.baths || 0,
-          m2: property.m2 || 0,
-          featured: property.featured || false,
-          description: property.description || 'No description',
-          image: property.image 
-            ? pb.getFileUrl(property, property.image)
-            : 'https://placehold.co/600x400',
-          images: property.images && Array.isArray(property.images)
-            ? property.images.map(img => pb.getFileUrl(property, img))
-            : []
-        }));
-
-        setProperties(propertiesWithImages);
-      } catch (error) {
-        console.error('Error fetching properties:', error);
+        if (isActive && records && records.items) {
+          const propertiesWithImages = records.items.map(property => ({
+            id: property.id,
+            title: property.title || 'No Title',
+            price: property.price || 'Price not set',
+            location: property.location || 'Location not set',
+            beds: property.beds || 0,
+            baths: property.baths || 0,
+            m2: property.m2 || 0,
+            featured: property.featured || false,
+            description: property.description || 'No description',
+            propertyType: property.propertyType || '',
+            type: property.type || 'Not specified',
+            image: property.image 
+              ? pb.files.getURL(property, property.image) 
+              : 'https://placehold.co/600x400',
+            images: property.images && Array.isArray(property.images)
+              ? property.images.map(img => pb.files.getURL(property, img))
+              : []
+          }));
+          
+          setProperties(propertiesWithImages);
+        }
+      } catch (err) {
+        if (isActive) {
+          console.error('Error fetching featured properties:', err);
+          setError('Failed to load featured properties. Please try again later.');
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
-    fetchProperties();
+    fetchFeaturedProperties();
+    
+    // Cleanup function
+    return () => {
+      isActive = false;
+    };
   }, []);
 
+  const handlePropertyClick = (property) => {
+    setSelectedProperty(property);
+  };
+
   if (loading) {
-    return (
-      <div className="text-center py-16">
-        <p className="text-xl">Loading properties...</p>
-      </div>
-    );
+    return <div className="text-center py-10">Loading featured properties...</div>;
   }
 
+  if (error) {
+    return <div className="text-center py-10 text-red-500">{error}</div>;
+  }
+
+  // If no featured properties, don't render the section
   if (properties.length === 0) {
-    return (
-      <div className="text-center py-16">
-        <p className="text-xl">No properties found</p>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <section className="max-w-7xl mx-auto py-16 px-4">
+    <section className="max-w-7xl mx-auto py-16 px-4 bg-gray-50">
       <h2 className="text-3xl font-bold mb-8">Featured Properties</h2>
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {properties.map((property) => (
           <div
             key={property.id}
             className="bg-white rounded-2xl drop-shadow-lg overflow-hidden hover:drop-shadow-xl hover:scale-105 transition-all duration-300 relative group cursor-pointer"
-            onClick={() => setSelectedProperty(property)}
+            onClick={() => handlePropertyClick(property)}
           >
             <img
               src={property.image}

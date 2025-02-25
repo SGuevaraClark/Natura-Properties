@@ -1,52 +1,76 @@
 import React, { useEffect, useState } from "react";
-import { pb } from '../lib/pocketbase';
+import PocketBase from 'pocketbase';
 import { FaBath, FaBed, FaHeart, FaRuler } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
 import { useSearch } from "../context/SearchContext";
+
+const pb = new PocketBase('http://127.0.0.1:8090');
 
 const AllProperties = ({ setSelectedProperty }) => {
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { searchParams } = useSearch();
 
   useEffect(() => {
+    let isActive = true;
+    
     const fetchProperties = async () => {
       try {
-        const records = await pb.collection('properties').getList(1, 100, {
+        setLoading(true);
+        // Use the $autoCancel: false option to prevent auto-cancellation
+        const records = await pb.collection('properties').getList(1, 50, {
           sort: '-created',
-          $autoCancel: false,
+          $autoCancel: false
         });
         
-        const propertiesWithImages = records.items.map(property => ({
-          id: property.id,
-          title: property.title || 'No Title',
-          price: property.price || 'Price not set',
-          location: property.location || 'Location not set',
-          beds: property.beds || 0,
-          baths: property.baths || 0,
-          m2: property.m2 || 0,
-          featured: property.featured || false,
-          description: property.description || 'No description',
-          propertyType: property.propertyType || '',
-          image: property.image 
-            ? pb.getFileUrl(property, property.image) 
-            : 'https://placehold.co/600x400',
-          images: property.images && Array.isArray(property.images)
-            ? property.images.map(img => pb.getFileUrl(property, img))
-            : []
-        }));
+        if (isActive && records && records.items) {
+          const propertiesWithImages = records.items.map(property => ({
+            id: property.id,
+            title: property.title || 'No Title',
+            price: property.price || 'Price not set',
+            location: property.location || 'Location not set',
+            beds: property.beds || 0,
+            baths: property.baths || 0,
+            m2: property.m2 || 0,
+            featured: property.featured || false,
+            description: property.description || 'No description',
+            propertyType: property.propertyType || '',
+            image: property.image 
+              ? pb.files.getURL(property, property.image) 
+              : 'https://placehold.co/600x400',
+            images: property.images && Array.isArray(property.images)
+              ? property.images.map(img => pb.files.getURL(property, img))
+              : []
+          }));
 
-        setProperties(propertiesWithImages);
-        setFilteredProperties(propertiesWithImages);
-      } catch (error) {
-        console.error('Error fetching properties:', error);
+          if (isActive) {
+            setProperties(propertiesWithImages);
+            setFilteredProperties(propertiesWithImages);
+          }
+        } else if (isActive) {
+          setProperties([]);
+          setFilteredProperties([]);
+        }
+      } catch (err) {
+        if (isActive) {
+          console.error('Error fetching properties:', err);
+          setError('Failed to load properties. Please try again later.');
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProperties();
+    
+    // Cleanup function
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   // Filter properties when search params change
@@ -55,15 +79,15 @@ const AllProperties = ({ setSelectedProperty }) => {
 
     let filtered = [...properties];
 
-    // Filter by location
-    if (searchParams.location) {
+    // Filter by location if searchParams and location exist
+    if (searchParams && searchParams.location) {
       filtered = filtered.filter(property => 
         property.location.toLowerCase().includes(searchParams.location.toLowerCase())
       );
     }
 
-    // Filter by property type
-    if (searchParams.propertyType) {
+    // Filter by property type if searchParams and propertyType exist
+    if (searchParams && searchParams.propertyType && searchParams.propertyType !== 'All') {
       filtered = filtered.filter(property => 
         property.propertyType === searchParams.propertyType
       );
@@ -72,12 +96,16 @@ const AllProperties = ({ setSelectedProperty }) => {
     setFilteredProperties(filtered);
   }, [searchParams, properties]);
 
+  const handlePropertyClick = (property) => {
+    setSelectedProperty(property);
+  };
+
   if (loading) {
-    return (
-      <div className="text-center py-16">
-        <p className="text-xl">Loading properties...</p>
-      </div>
-    );
+    return <div className="text-center py-10">Loading properties...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-10 text-red-500">{error}</div>;
   }
 
   return (
@@ -94,7 +122,7 @@ const AllProperties = ({ setSelectedProperty }) => {
             <div
               key={property.id}
               className="bg-white rounded-2xl drop-shadow-lg overflow-hidden hover:drop-shadow-xl hover:scale-105 transition-all duration-300 relative group cursor-pointer"
-              onClick={() => setSelectedProperty(property)}
+              onClick={() => handlePropertyClick(property)}
             >
               <img
                 src={property.image}
@@ -117,7 +145,7 @@ const AllProperties = ({ setSelectedProperty }) => {
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 mb-4">
                   <FaLocationDot />
-                  <p>{property.location}</p>
+                  <p>{property.location || 'Location not specified'}</p>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <div className="flex items-center gap-1">
