@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 
-const SearchForm = () => {
-  const { updateSearchParams, performSearch } = useSearch();
+const SearchForm = ({ inlineForm = false }) => {
+  const { updateSearchParams } = useSearch();
   const navigate = useNavigate();
   
   const [location, setLocation] = useState('');
@@ -15,17 +15,32 @@ const SearchForm = () => {
     // Update search params in context
     updateSearchParams({ location, propertyType });
     
-    // Navigate to search results page
-    navigate('/properties/search');
+    // Scroll to search results section if on home page
+    if (window.location.pathname === '/') {
+      const searchResultsSection = document.getElementById('search-results');
+      if (searchResultsSection) {
+        searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      // Navigate to home page if not already there
+      navigate('/');
+      // We'll need to scroll after navigation completes
+      setTimeout(() => {
+        const searchResultsSection = document.getElementById('search-results');
+        if (searchResultsSection) {
+          searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
   };
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-3 mx-auto flex flex-col md:flex-row items-center"
+      className={`${inlineForm ? 'flex flex-col md:flex-row gap-4' : 'mt-3 mx-auto flex flex-col md:flex-row items-center'}`}
     >
       <div className="w-full md:w-3/5 md:pr-2 mb-4 md:mb-0">
-        <label htmlFor="location" className="sr-only">
+        <label htmlFor="location" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
           Location
         </label>
         <input
@@ -38,7 +53,7 @@ const SearchForm = () => {
         />
       </div>
       <div className="w-full md:w-2/5 md:px-2">
-        <label htmlFor="property-type" className="sr-only">
+        <label htmlFor="property-type" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
           Property Type
         </label>
         <select

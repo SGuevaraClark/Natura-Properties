@@ -14,10 +14,10 @@ const Home = () => {
   const handleSearch = () => {
     updateSearchParams({ location, propertyType });
     
-    // Scroll to the All Properties section
-    const allPropertiesSection = document.getElementById('all-properties');
-    if (allPropertiesSection) {
-      allPropertiesSection.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to the search results section
+    const searchResultsSection = document.getElementById('search-results');
+    if (searchResultsSection) {
+      searchResultsSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -25,10 +25,10 @@ const Home = () => {
     setLocation(locationName);
     updateSearchParams({ location: locationName, propertyType });
     
-    // Scroll to the All Properties section
-    const allPropertiesSection = document.getElementById('all-properties');
-    if (allPropertiesSection) {
-      allPropertiesSection.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to the search results section
+    const searchResultsSection = document.getElementById('search-results');
+    if (searchResultsSection) {
+      searchResultsSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 

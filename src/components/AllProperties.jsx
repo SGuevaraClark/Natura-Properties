@@ -2,16 +2,13 @@ import React, { useEffect, useState } from "react";
 import PocketBase from 'pocketbase';
 import { FaBath, FaBed, FaHeart, FaRuler } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
-import { useSearch } from "../context/SearchContext";
 
 const pb = new PocketBase('http://127.0.0.1:8090');
 
 const AllProperties = ({ setSelectedProperty }) => {
   const [properties, setProperties] = useState([]);
-  const [filteredProperties, setFilteredProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { searchParams } = useSearch();
 
   useEffect(() => {
     let isActive = true;
@@ -47,11 +44,9 @@ const AllProperties = ({ setSelectedProperty }) => {
 
           if (isActive) {
             setProperties(propertiesWithImages);
-            setFilteredProperties(propertiesWithImages);
           }
         } else if (isActive) {
           setProperties([]);
-          setFilteredProperties([]);
         }
       } catch (err) {
         if (isActive) {
@@ -73,29 +68,6 @@ const AllProperties = ({ setSelectedProperty }) => {
     };
   }, []);
 
-  // Filter properties when search params change
-  useEffect(() => {
-    if (properties.length === 0) return;
-
-    let filtered = [...properties];
-
-    // Filter by location if searchParams and location exist
-    if (searchParams && searchParams.location) {
-      filtered = filtered.filter(property => 
-        property.location.toLowerCase().includes(searchParams.location.toLowerCase())
-      );
-    }
-
-    // Filter by property type if searchParams and propertyType exist
-    if (searchParams && searchParams.propertyType && searchParams.propertyType !== 'All') {
-      filtered = filtered.filter(property => 
-        property.propertyType === searchParams.propertyType
-      );
-    }
-
-    setFilteredProperties(filtered);
-  }, [searchParams, properties]);
-
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
   };
@@ -112,13 +84,13 @@ const AllProperties = ({ setSelectedProperty }) => {
     <section id="all-properties" className="max-w-7xl mx-auto py-16 px-4">
       <h2 className="text-3xl font-bold mb-8">All Properties</h2>
       
-      {filteredProperties.length === 0 ? (
+      {properties.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-xl">No properties found matching your search criteria</p>
+          <p className="text-xl">No properties found</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProperties.map((property) => (
+          {properties.map((property) => (
             <div
               key={property.id}
               className="bg-white rounded-2xl drop-shadow-lg overflow-hidden hover:drop-shadow-xl hover:scale-105 transition-all duration-300 relative group cursor-pointer"

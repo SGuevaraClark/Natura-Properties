@@ -1,6 +1,7 @@
 import PropertyModal from "./components/PropertyModal";
 import FeaturedProperties from "./components/FeaturedProperties";
 import AllProperties from "./components/AllProperties";
+import SearchResults from "./components/SearchResults";
 import Contact from "./components/Contact.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
@@ -22,6 +23,8 @@ function App() {
       <FeaturedProperties setSelectedProperty={setSelectedProperty} />
       
       <AllProperties setSelectedProperty={setSelectedProperty} />
+      
+      <SearchResults setSelectedProperty={setSelectedProperty} />
 
       <Contact />
 
