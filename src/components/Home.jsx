@@ -61,9 +61,7 @@ const Home = () => {
               <select className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]">
                 <option value="">Lots</option>
                 <option value="">Houses</option>
-                <option value="">Hotels</option>
-                <option value="">Land for Development</option>
-                <option value="">Other</option>
+                <option value="">Investment Opportunities</option>
               </select>
 
               <button className="bg-[#7dc138] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-colors">

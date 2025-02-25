@@ -56,7 +56,7 @@ migrate((app) => {
     "id": "number4149042626",
     "max": null,
     "min": null,
-    "name": "Sq",
+    "name": "m2",
     "onlyInt": false,
     "presentable": false,
     "required": false,

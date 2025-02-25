@@ -10,8 +10,10 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const records = await pb.collection('properties').getList(1, 50, {
+        // Fetch only properties marked as featured
+        const records = await pb.collection('properties').getList(1, 6, {
           sort: '-created',
+          filter: 'featured=true',
           $autoCancel: false,
         });
         
@@ -22,12 +24,13 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
           location: property.location || 'Location not set',
           beds: property.beds || 0,
           baths: property.baths || 0,
-          sqft: property.sqft || 0,
+          m2: property.m2 || 0,
+          featured: property.featured || false,
           description: property.description || 'No description',
           image: property.image 
-            ? pb.getFileUrl(property, property.image) 
+            ? pb.getFileUrl(property, property.image)
             : 'https://placehold.co/600x400',
-          images: property.images 
+          images: property.images && Array.isArray(property.images)
             ? property.images.map(img => pb.getFileUrl(property, img))
             : []
         }));
@@ -103,7 +106,7 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
                 </div>
                 <div className="flex items-center gap-1">
                   <FaRuler />
-                  <span>{property.sqft} sqft</span>
+                  <span>{property.m2} m2</span>
                 </div>
               </div>
             </div>

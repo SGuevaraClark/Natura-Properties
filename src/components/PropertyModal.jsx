@@ -20,7 +20,9 @@ const PropertyModal = ({ onClose, properties }) => {
   }
 
   const currentProperty = properties[currentPropertyIndex];
-  const images = currentProperty.images || [];
+  const images = currentProperty.images && currentProperty.images.length > 0 
+    ? currentProperty.images 
+    : [currentProperty.image || 'https://placehold.co/600x400'];
 
   const phoneNumber = "50688664708";
   const message = `Hello, I'm interested in the property: ${currentProperty.title} - ${currentProperty.location}. Price: ${currentProperty.price}`;
@@ -114,7 +116,7 @@ const PropertyModal = ({ onClose, properties }) => {
 
             <div className="flex items-center gap-2">
               <FaRuler className="text-[#7dc138]" />
-              <span className="text-gray-600">{currentProperty.sqft} sqft</span>
+              <span className="text-gray-600">{currentProperty.m2} m²</span>
             </div>
           </div>
 
