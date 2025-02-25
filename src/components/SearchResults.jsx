@@ -6,14 +6,47 @@ import { useSearch } from "../context/SearchContext";
 const SearchResults = ({ setSelectedProperty }) => {
   const { searchParams, searchResults, loading } = useSearch();
 
+  // If loading, show loading indicator
   if (loading) {
-    return <div className="text-center py-10">Loading search results...</div>;
+    return (
+      <section id="search-results" className="max-w-7xl mx-auto py-16 px-4">
+        <div className="text-center py-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7dc138] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading search results...</p>
+        </div>
+      </section>
+    );
   }
 
   // If no search has been performed yet, don't render the section
   if (!searchParams.location && (!searchParams.propertyType || searchParams.propertyType === 'All')) {
     return null;
   }
+
+  // Function to get the appropriate icon for property type
+  const getPropertyTypeIcon = (type) => {
+    if (!type) return <FaHome className="text-[#7dc138] mr-2" />;
+    
+    const lowerType = type.toLowerCase();
+    switch(lowerType) {
+      case 'house':
+        return <FaHome className="text-[#7dc138] mr-2" />;
+      case 'apartment':
+        return <FaHome className="text-[#7dc138] mr-2" />;
+      case 'lot':
+        return <FaRuler className="text-[#7dc138] mr-2" />;
+      case 'hotel':
+        return <FaBed className="text-[#7dc138] mr-2" />;
+      default:
+        return <FaHome className="text-[#7dc138] mr-2" />;
+    }
+  };
+
+  // Function to capitalize the first letter of a string
+  const capitalize = (str) => {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   return (
     <section id="search-results" className="max-w-7xl mx-auto py-16 px-4">
@@ -39,8 +72,8 @@ const SearchResults = ({ setSelectedProperty }) => {
           )}
           {searchParams.propertyType && searchParams.propertyType !== 'All' && (
             <div className="flex items-center bg-gray-100 text-gray-800 px-4 py-2 rounded-full">
-              <FaHome className="text-[#7dc138] mr-2" />
-              <span>{searchParams.propertyType}</span>
+              {getPropertyTypeIcon(searchParams.propertyType)}
+              <span>{capitalize(searchParams.propertyType)}</span>
             </div>
           )}
         </div>
@@ -62,7 +95,7 @@ const SearchResults = ({ setSelectedProperty }) => {
               <div
                 key={property.id}
                 className="bg-white rounded-2xl drop-shadow-lg overflow-hidden hover:drop-shadow-xl hover:scale-105 transition-all duration-300 relative group cursor-pointer"
-                onClick={() => setSelectedProperty(property)}
+                onClick={() => setSelectedProperty && setSelectedProperty(property)}
               >
                 <img
                   src={property.image}
@@ -79,7 +112,12 @@ const SearchResults = ({ setSelectedProperty }) => {
                       <h3 className="text-xl font-semibold mb-2">{property.price}</h3>
                       <h4 className="text-lg">{property.title}</h4>
                     </div>
-                    <button className="text-gray-500 hover:text-red-500 transition-colors">
+                    <button 
+                      className="text-gray-500 hover:text-red-500 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the parent onClick
+                      }}
+                    >
                       <FaHeart className="text-xl" />
                     </button>
                   </div>
@@ -87,6 +125,12 @@ const SearchResults = ({ setSelectedProperty }) => {
                     <FaLocationDot className="text-[#7dc138]" />
                     <p>{property.location || 'Location not specified'}</p>
                   </div>
+                  {property.propertyType && (
+                    <div className="flex items-center gap-2 text-gray-600 mb-4">
+                      {getPropertyTypeIcon(property.propertyType)}
+                      <p>{capitalize(property.propertyType)}</p>
+                    </div>
+                  )}
                   <div className="flex justify-between text-gray-600">
                     <div className="flex items-center gap-1">
                       <FaBed className="text-[#7dc138]" />

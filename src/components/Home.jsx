@@ -93,7 +93,8 @@ const Home = () => {
                 <option value="">All Types</option>
                 <option value="lot">Lots</option>
                 <option value="house">Houses</option>
-                <option value="investment">Investment Opportunities</option>
+                <option value="apartment">Apartments</option>
+                <option value="hotel">Hotels</option>
               </select>
 
               <button 

@@ -1,43 +1,64 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 
 const SearchForm = ({ inlineForm = false }) => {
-  const { updateSearchParams } = useSearch();
+  const { updateSearchParams, searchParams } = useSearch();
   const navigate = useNavigate();
+  const location = useLocation();
   
-  const [location, setLocation] = useState('');
+  const [searchLocation, setSearchLocation] = useState('');
   const [propertyType, setPropertyType] = useState('All');
 
-  const handleSubmit = async (e) => {
+  // Sync form state with context when searchParams changes
+  useEffect(() => {
+    setSearchLocation(searchParams.location || '');
+    setPropertyType(searchParams.propertyType || 'All');
+  }, [searchParams]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     // Update search params in context
-    updateSearchParams({ location, propertyType });
+    updateSearchParams({ 
+      location: searchLocation, 
+      propertyType: propertyType 
+    });
     
     // Scroll to search results section if on home page
-    if (window.location.pathname === '/') {
-      const searchResultsSection = document.getElementById('search-results');
-      if (searchResultsSection) {
-        searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // Navigate to home page if not already there
-      navigate('/');
-      // We'll need to scroll after navigation completes
+    if (location.pathname === '/') {
       setTimeout(() => {
         const searchResultsSection = document.getElementById('search-results');
         if (searchResultsSection) {
           searchResultsSection.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
+    } else {
+      // Navigate to home page if not already there
+      navigate('/');
+      // Need to wait for navigation to complete before scrolling
+      setTimeout(() => {
+        const searchResultsSection = document.getElementById('search-results');
+        if (searchResultsSection) {
+          searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 300);
     }
   };
+
+  // Common locations in Costa Rica that users might search for
+  const commonLocations = [
+    "Santa Ana", 
+    "Escazú", 
+    "Belén", 
+    "Jacó", 
+    "Nosara"
+  ];
 
   return (
     <form
       onSubmit={handleSubmit}
-      className={`${inlineForm ? 'flex flex-col md:flex-row gap-4' : 'mt-3 mx-auto flex flex-col md:flex-row items-center'}`}
+      className={`${inlineForm ? 'flex-row items-end' : 'mt-3 mx-auto flex flex-col md:flex-row items-center'}`}
     >
       <div className="w-full md:w-3/5 md:pr-2 mb-4 md:mb-0">
         <label htmlFor="location" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
@@ -46,31 +67,33 @@ const SearchForm = ({ inlineForm = false }) => {
         <input
           type="text"
           id="location"
-          placeholder="Enter Keywords or Location (City, State, Zip, etc)"
+          placeholder="Enter location (Santa Ana, Nosara, etc)"
           className="w-full px-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring focus:ring-blue-500"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
+          value={searchLocation}
+          onChange={(e) => setSearchLocation(e.target.value)}
+          list="common-locations"
         />
+        <datalist id="common-locations">
+          {commonLocations.map((loc, index) => (
+            <option key={index} value={loc} />
+          ))}
+        </datalist>
       </div>
       <div className="w-full md:w-2/5 md:px-2">
-        <label htmlFor="property-type" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
+        <label htmlFor="propertyType" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
           Property Type
         </label>
         <select
-          id="property-type"
+          id="propertyType"
           className="w-full px-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring focus:ring-blue-500"
           value={propertyType}
           onChange={(e) => setPropertyType(e.target.value)}
         >
-          <option value="All">All</option>
-          <option value="Apartment">Apartment</option>
-          <option value="Studio">Studio</option>
-          <option value="Condo">Condo</option>
-          <option value="House">House</option>
-          <option value="Cabin Or Cottage">Cabin or Cottage</option>
-          <option value="Loft">Loft</option>
-          <option value="Room">Room</option>
-          <option value="Other">Other</option>
+          <option value="All">All Properties</option>
+          <option value="house">House</option>
+          <option value="lot">Lot</option>
+          <option value="apartment">Apartment</option>
+          <option value="hotel">Hotel</option>
         </select>
       </div>
       <button

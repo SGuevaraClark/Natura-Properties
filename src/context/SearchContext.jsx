@@ -21,6 +21,7 @@ export const SearchProvider = ({ children }) => {
   useEffect(() => {
     const fetchAllProperties = async () => {
       try {
+        setLoading(true);
         const records = await pb.collection('properties').getList(1, 100, {
           sort: '-created',
           $autoCancel: false
@@ -31,7 +32,7 @@ export const SearchProvider = ({ children }) => {
             id: property.id,
             title: property.title || 'No Title',
             price: property.price || 'Price not set',
-            location: property.location || 'Location not set',
+            location: property.location || 'Location not specified',
             beds: property.beds || 0,
             baths: property.baths || 0,
             m2: property.m2 || 0,
@@ -51,16 +52,25 @@ export const SearchProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Error fetching all properties:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchAllProperties();
   }, []);
 
-  // Update search params
+  // Update search params and perform search
   const updateSearchParams = (newParams) => {
-    setSearchParams({ ...searchParams, ...newParams });
-    performSearch({ ...searchParams, ...newParams });
+    // Normalize parameters
+    const updatedParams = {
+      location: newParams.location || '',
+      propertyType: newParams.propertyType === 'All' ? 'All' : 
+                   (newParams.propertyType || '').toLowerCase()
+    };
+    
+    setSearchParams(updatedParams);
+    performSearch(updatedParams);
   };
 
   // Perform search using the cached properties
@@ -68,15 +78,33 @@ export const SearchProvider = ({ children }) => {
     setLoading(true);
     
     try {
+      // If no search criteria, return empty results
+      if (!params.location && (!params.propertyType || params.propertyType === 'All')) {
+        setSearchResults([]);
+        setLoading(false);
+        return;
+      }
+      
       // Filter properties based on search params
       const filtered = allProperties.filter(property => {
         // Match location (if provided)
-        const locationMatch = !params.location || 
-          property.location.toLowerCase().includes(params.location.toLowerCase());
+        let locationMatch = true;
+        
+        if (params.location && params.location.trim() !== '') {
+          const searchLocation = params.location.trim().toLowerCase();
+          
+          // Check if property location contains the search term
+          locationMatch = property.location && 
+                         property.location.toLowerCase().includes(searchLocation);
+        }
         
         // Match property type (if not 'All')
-        const typeMatch = params.propertyType === 'All' || 
-          property.propertyType === params.propertyType;
+        let typeMatch = true;
+        
+        if (params.propertyType && params.propertyType !== 'All') {
+          typeMatch = property.propertyType && 
+                     property.propertyType.toLowerCase() === params.propertyType.toLowerCase();
+        }
         
         return locationMatch && typeMatch;
       });
@@ -97,7 +125,8 @@ export const SearchProvider = ({ children }) => {
         searchResults, 
         loading, 
         updateSearchParams, 
-        performSearch 
+        performSearch,
+        allProperties
       }}
     >
       {children}
@@ -105,6 +134,6 @@ export const SearchProvider = ({ children }) => {
   );
 };
 
-export default SearchProvider;
+export const useSearch = () => useContext(SearchContext);
 
-export const useSearch = () => useContext(SearchContext); 
+export default SearchProvider; 
