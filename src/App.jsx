@@ -5,30 +5,33 @@ import Contact from "./components/Contact.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
 import { useState } from "react";
+import { SearchProvider } from "./context/SearchContext";
 import NaturaLogoBG from '../public/NaturaLogoBG.png'
 
 function App() {
   const [selectedProperty, setSelectedProperty] = useState(null);
 
   return (
-    <div className="min-h-screen w-full bg-gray-50">
-      <Home />
+    <SearchProvider>
+      <div className="min-h-screen w-full bg-gray-50">
+        <Home />
 
-      <FeaturedProperties setSelectedProperty={setSelectedProperty} />
-      
-      <AllProperties setSelectedProperty={setSelectedProperty} />
+        <FeaturedProperties setSelectedProperty={setSelectedProperty} />
+        
+        <AllProperties setSelectedProperty={setSelectedProperty} />
 
-      <Contact />
+        <Contact />
 
-      <Footer />
+        <Footer />
 
-      {selectedProperty && (
-        <PropertyModal
-          properties={[selectedProperty]}
-          onClose={() => setSelectedProperty(null)}
-        />
-      )}
-    </div>
+        {selectedProperty && (
+          <PropertyModal
+            properties={[selectedProperty]}
+            onClose={() => setSelectedProperty(null)}
+          />
+        )}
+      </div>
+    </SearchProvider>
   );
 }
 

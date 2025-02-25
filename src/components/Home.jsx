@@ -3,9 +3,34 @@ import naturaLogoWide from "../assets/naturaLogoWide.png";
 import backgroundVideo from "../assets/background-video.mp4";
 import homeImage from "../assets/homeImage.jpg";
 import { FaLocationDot } from "react-icons/fa6";
+import { useSearch } from "../context/SearchContext";
 
 const Home = () => {
+  const { updateSearchParams } = useSearch();
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [location, setLocation] = useState('');
+  const [propertyType, setPropertyType] = useState('');
+
+  const handleSearch = () => {
+    updateSearchParams({ location, propertyType });
+    
+    // Scroll to the All Properties section
+    const allPropertiesSection = document.getElementById('all-properties');
+    if (allPropertiesSection) {
+      allPropertiesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleLocationClick = (locationName) => {
+    setLocation(locationName);
+    updateSearchParams({ location: locationName, propertyType });
+    
+    // Scroll to the All Properties section
+    const allPropertiesSection = document.getElementById('all-properties');
+    if (allPropertiesSection) {
+      allPropertiesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="relative h-[100vh]">
@@ -56,31 +81,50 @@ const Home = () => {
                 type="text"
                 placeholder="Search by Location"
                 className="flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138] hover:border-[#7dc138] hover:bg-[#7dc138]/5 focus:bg-white text-black transition-colors duration-200"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
               />
 
-              <select className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]">
-                <option value="">Lots</option>
-                <option value="">Houses</option>
-                <option value="">Investment Opportunities</option>
+              <select 
+                className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]"
+                value={propertyType}
+                onChange={(e) => setPropertyType(e.target.value)}
+              >
+                <option value="">All Types</option>
+                <option value="lot">Lots</option>
+                <option value="house">Houses</option>
+                <option value="investment">Investment Opportunities</option>
               </select>
 
-              <button className="bg-[#7dc138] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-colors">
+              <button 
+                className="bg-[#7dc138] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-colors"
+                onClick={handleSearch}
+              >
                 Search
               </button>
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-6">
-              <div className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer">
+              <div 
+                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
+                onClick={() => handleLocationClick("San José")}
+              >
                 <FaLocationDot className="text-[#7dc138] mb-2" />
                 <span className="font-semibold text-white">San José</span>
               </div>
 
-              <div className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer">
+              <div 
+                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
+                onClick={() => handleLocationClick("Guanacaste")}
+              >
                 <FaLocationDot className="text-[#7dc138] mb-2" />
                 <span className="font-semibold text-white">Guanacaste</span>
               </div>
 
-              <div className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer">
+              <div 
+                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
+                onClick={() => handleLocationClick("Puntarenas")}
+              >
                 <FaLocationDot className="text-[#7dc138] mb-2" />
                 <span className="font-semibold text-white">Puntarenas</span>
               </div>
