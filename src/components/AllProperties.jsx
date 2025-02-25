@@ -28,7 +28,7 @@ const AllProperties = ({ setSelectedProperty }) => {
           image: property.image 
             ? pb.getFileUrl(property, property.image) 
             : 'https://placehold.co/600x400',
-          images: property.images 
+          images: property.images && Array.isArray(property.images)
             ? property.images.map(img => pb.getFileUrl(property, img))
             : []
         }));
@@ -61,69 +61,55 @@ const AllProperties = ({ setSelectedProperty }) => {
   }
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold mb-12 text-center">All Properties</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {properties.map((property) => (
-            <div
-              key={property.id}
-              className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
-            >
-              <div className="relative">
-                <img
-                  src={property.image}
-                  alt={property.title}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute top-4 right-4">
-                  <button className="bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
-                    <FaHeart className="text-gray-400 hover:text-red-500" />
-                  </button>
+    <section className="max-w-7xl mx-auto py-16 px-4">
+      <h2 className="text-3xl font-bold mb-8">All Properties</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {properties.map((property) => (
+          <div
+            key={property.id}
+            className="bg-white rounded-2xl drop-shadow-lg overflow-hidden hover:drop-shadow-xl hover:scale-105 transition-all duration-300 relative group cursor-pointer"
+            onClick={() => setSelectedProperty(property)}
+          >
+            <img
+              src={property.image}
+              alt={property.title}
+              className="w-full h-64 object-cover"
+              onError={(e) => {
+                e.target.src = 'https://placehold.co/600x400';
+                e.target.onerror = null;
+              }}
+            />
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{property.price}</h3>
+                  <h4 className="text-lg">{property.title}</h4>
                 </div>
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center gap-2 text-gray-500 text-sm mb-3">
-                  <FaLocationDot className="text-[#7dc138]" />
-                  <span>{property.location}</span>
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
-                  {property.title}
-                </h3>
-                <div className="text-2xl font-bold text-[#7dc138] mb-4">
-                  {property.price}
-                </div>
-
-                <div className="flex justify-between mb-6">
-                  <div className="flex items-center gap-2">
-                    <FaBed className="text-[#7dc138]" />
-                    <span className="text-gray-600">{property.beds}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <FaBath className="text-[#7dc138]" />
-                    <span className="text-gray-600">{property.baths}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <FaRuler className="text-[#7dc138]" />
-                    <span className="text-gray-600">{property.m2} m²</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setSelectedProperty(property)}
-                  className="w-full bg-[#7dc138] text-white py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-all duration-300 hover:scale-105 transform"
-                >
-                  View Details
+                <button className="text-gray-500 hover:text-red-500 transition-colors">
+                  <FaHeart className="text-xl" />
                 </button>
               </div>
+              <div className="flex items-center gap-2 text-gray-600 mb-4">
+                <FaLocationDot />
+                <p>{property.location}</p>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <div className="flex items-center gap-1">
+                  <FaBed />
+                  <span>{property.beds} Beds</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FaBath />
+                  <span>{property.baths} Baths</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <FaRuler />
+                  <span>{property.m2} m2</span>
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
