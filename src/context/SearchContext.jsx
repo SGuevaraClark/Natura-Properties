@@ -1,7 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import PocketBase from 'pocketbase';
+import { getImageUrl } from '../utils/imageUtils';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase(import.meta.env.VITE_API_URL);
 
 // Create the context
 export const SearchContext = createContext();
@@ -42,10 +43,10 @@ export const SearchProvider = ({ children }) => {
             propertyType: property.propertyType || '',
             type: property.type || 'Not specified',
             image: property.image 
-              ? pb.files.getURL(property, property.image) 
+              ? getImageUrl(pb, property, property.image)
               : 'https://placehold.co/600x400',
             images: property.images && Array.isArray(property.images)
-              ? property.images.map(img => pb.files.getURL(property, img))
+              ? property.images.map(img => getImageUrl(pb, property, img))
               : []
           }));
           

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import PocketBase from 'pocketbase';
 import { FaBath, FaBed, FaHeart, FaRuler } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
+import { handleImageError } from "../utils/imageUtils";
+import LazyImage from './LazyImage';
 
-const pb = new PocketBase('http://127.0.0.1:8090');
+const pb = new PocketBase(import.meta.env.VITE_API_URL);
 
 const FeaturedProperties = ({ setSelectedProperty }) => {
   const [properties, setProperties] = useState([]);
@@ -110,7 +112,7 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
             onClick={() => handlePropertyClick(property)}
           >
             <div className="relative h-64 overflow-hidden">
-              <img 
+              <LazyImage 
                 src={property.image} 
                 alt={property.title} 
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"

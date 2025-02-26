@@ -1,19 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaBath,
   FaBed,
   FaChevronLeft,
   FaChevronRight,
-  FaHeart,
   FaRuler,
   FaWhatsapp,
 } from "react-icons/fa";
 import { FaLocationDot, FaX } from "react-icons/fa6";
+import { handleImageError } from "../utils/imageUtils";
+import SEO from "./SEO";
+import LazyImage from './LazyImage';
 
 const PropertyModal = ({ onClose, properties }) => {
   const [currentPropertyIndex, setCurrentPropertyIndex] = useState(0);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(false);
 
   if (!properties || properties.length === 0) {
     return null;
@@ -36,19 +37,31 @@ const PropertyModal = ({ onClose, properties }) => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
+  // Create SEO title and description for the property
+  const seoTitle = `${currentProperty.title} | Natura Properties`;
+  const seoDescription = `${currentProperty.beds} bed, ${currentProperty.baths} bath, ${currentProperty.m2}m² property in ${currentProperty.location}. ${currentProperty.price}. ${currentProperty.description?.substring(0, 100)}...`;
+
   return (
     <div
       className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
+      {/* Dynamic SEO for the current property */}
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        image={images[0]}
+        type="article"
+      />
+      
       <div
         className="relative bg-white rounded-3xl max-w-xl w-full md:max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-[300px] md:h-[400px]">
-          <img
+          <LazyImage
             src={images[currentImageIndex]}
-            alt=""
+            alt={currentProperty.title || "Property image"}
             className="w-full h-full object-cover"
           />
 
@@ -73,15 +86,7 @@ const PropertyModal = ({ onClose, properties }) => {
             <FaX size={20} />
           </button>
 
-          <div className="absolute bottom-4 right-4 flex items-center gap-4">
-            <button
-              onClick={() => setIsFavorite(!isFavorite)}
-              className={`bg-white/80 p-2 rounded-full ${
-                isFavorite ? "text-red-500" : "text-gray-500"
-              }`}
-            >
-              <FaHeart />
-            </button>
+          <div className="absolute bottom-4 right-4">
             <div className="bg-black/50 text-white px-3 py-1 rounded-full">
               {currentImageIndex + 1} / {images.length}
             </div>

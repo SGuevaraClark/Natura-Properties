@@ -3,6 +3,7 @@ import naturaLogoWide from "../assets/naturaLogoWide.png";
 import backgroundVideo from "../assets/background-video.mp4";
 import homeImage from "../assets/homeImage.jpg";
 import SearchForm from "./SearchForm";
+import { handleImageError } from "../utils/imageUtils";
 
 const Home = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -14,7 +15,8 @@ const Home = () => {
         className={`w-full h-full object-cover absolute transition-opacity duration-500 ${
           isVideoLoaded ? 'opacity-0' : 'opacity-100'
         }`}
-        alt="" 
+        alt="Natura Properties Background" 
+        onError={(e) => handleImageError(e)}
       />
       
       <video 
@@ -38,6 +40,7 @@ const Home = () => {
             src={naturaLogoWide} 
             alt="Natura Logo" 
             className="w-full max-w-xl mx-auto mb-4"
+            onError={(e) => handleImageError(e, 'https://placehold.co/800x200?text=Natura+Properties')}
           />
 
           <p className="relative mb-12">
