@@ -7,13 +7,13 @@ import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
 import { useState, useEffect } from "react";
 import NaturaLogoBG from "./assets/naturalogoBG.png";
-import { Routes, Route } from 'react-router-dom';
-import SearchPage from './pages/SearchPage';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import { SearchProvider } from './context/SearchContext';
 
 function App() {
   const [selectedProperty, setSelectedProperty] = useState(null);
+  const location = useLocation();
 
   // Add favicon to the browser tab
   useEffect(() => {
@@ -33,18 +33,20 @@ function App() {
       <div className="min-h-screen w-full bg-gray-50">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/properties/search" element={<SearchPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
 
-        <FeaturedProperties setSelectedProperty={setSelectedProperty} />
-        
-        <AllProperties setSelectedProperty={setSelectedProperty} />
-        
-        <SearchResults setSelectedProperty={setSelectedProperty} />
+        {/* Only show these components on the home page */}
+        {location.pathname === '/' && (
+          <>
+            <FeaturedProperties setSelectedProperty={setSelectedProperty} />
+            <AllProperties setSelectedProperty={setSelectedProperty} />
+            <SearchResults setSelectedProperty={setSelectedProperty} />
+          </>
+        )}
 
+        {/* Show these components on all pages */}
         <Contact />
-
         <Footer />
 
         {selectedProperty && (

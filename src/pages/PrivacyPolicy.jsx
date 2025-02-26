@@ -1,11 +1,37 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { FaArrowLeft, FaHome } from 'react-icons/fa';
 
 const PrivacyPolicy = () => {
+  // Scroll to top when the component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="max-w-4xl mx-auto py-16 px-4">
+      {/* Navigation Bar */}
+      <div className="flex justify-between items-center mb-8">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 text-[#7dc138] hover:text-[#7dc138]/80 transition-colors"
+        >
+          <FaArrowLeft />
+          <span>Back to Home</span>
+        </Link>
+        
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 bg-[#7dc138] text-white px-4 py-2 rounded-lg hover:bg-[#7dc138]/90 transition-colors"
+        >
+          <FaHome />
+          <span>Home</span>
+        </Link>
+      </div>
+      
       <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
       
-      <div className="bg-white p-8 rounded-2xl shadow-md">
+      <div className="bg-white p-8 rounded-2xl shadow-md mb-12">
         <p className="text-gray-500 mb-6">Last Updated: February 26th, 2025</p>
 
         <p className="text-gray-700 mb-6">
@@ -190,6 +216,17 @@ const PrivacyPolicy = () => {
             Email: naturaproperties@gmail.com
           </p>
         </section>
+      </div>
+      
+      {/* Return to top button */}
+      <div className="flex justify-center mb-12">
+        <Link 
+          to="/" 
+          className="flex items-center gap-2 bg-[#7dc138] text-white px-6 py-3 rounded-lg hover:bg-[#7dc138]/90 transition-colors"
+        >
+          <FaHome />
+          <span>Return to Homepage</span>
+        </Link>
       </div>
     </div>
   );
