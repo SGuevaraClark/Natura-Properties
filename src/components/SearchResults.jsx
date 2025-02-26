@@ -11,11 +11,6 @@ const pb = new PocketBase(import.meta.env.VITE_API_URL);
 const SearchResults = ({ setSelectedProperty }) => {
   const { searchResults, loading, error, searchParams } = useContext(SearchContext);
 
-  useEffect(() => {
-    console.log('SearchResults component - searchResults:', searchResults?.length);
-    console.log('SearchResults component - searchParams:', searchParams);
-  }, [searchResults, searchParams]);
-
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
   };

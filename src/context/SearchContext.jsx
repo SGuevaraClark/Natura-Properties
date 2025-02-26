@@ -24,7 +24,7 @@ export const SearchProvider = ({ children }) => {
     const fetchAllProperties = async () => {
       try {
         setLoading(true);
-        const records = await pb.collection('properties').getList(1, 100, {
+        const records = await pb.collection('properties').getList(1, 50, {
           sort: '-created',
           $autoCancel: false
         });
@@ -41,20 +41,18 @@ export const SearchProvider = ({ children }) => {
             featured: property.featured || false,
             description: property.description || 'No description',
             propertyType: property.propertyType || '',
-            type: property.type || 'Not specified',
             image: property.image 
-              ? getImageUrl(pb, property, property.image)
+              ? pb.files.getURL(property, property.image) 
               : 'https://placehold.co/600x400',
             images: property.images && Array.isArray(property.images)
-              ? property.images.map(img => getImageUrl(pb, property, img))
+              ? property.images.map(img => pb.files.getURL(property, img))
               : []
           }));
           
           setAllProperties(propertiesWithImages);
-          console.log('Fetched all properties:', propertiesWithImages.length);
         }
       } catch (error) {
-        console.error('Error fetching all properties:', error);
+        console.error('Error fetching properties:', error);
         setError('Failed to load properties. Please try again later.');
       } finally {
         setLoading(false);

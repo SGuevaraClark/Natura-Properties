@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSearch } from '../context/SearchContext';
 import { FaLocationDot } from "react-icons/fa6";
+import { trackSearch } from './Analytics';
 
 const SearchForm = ({ 
   inlineForm = false, 
@@ -25,41 +26,33 @@ const SearchForm = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    console.log('Search form submitted:', { searchLocation, propertyType });
-    
-    // Update search params in context
-    updateSearchParams({ 
-      location: searchLocation, 
-      propertyType: propertyType 
+    // Track the search action with correct variables
+    trackSearch({
+      location: searchLocation,
+      propertyType: propertyType
     });
     
-    // Scroll to search results section if on home page
-    if (location.pathname === '/') {
-      setTimeout(() => {
-        const searchResultsSection = document.getElementById('search-results');
-        if (searchResultsSection) {
-          searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          console.error('Search results section not found');
-        }
-      }, 100);
-    } else {
-      // Navigate to home page if not already there
-      navigate('/');
-      // Need to wait for navigation to complete before scrolling
-      setTimeout(() => {
-        const searchResultsSection = document.getElementById('search-results');
-        if (searchResultsSection) {
-          searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-        } else {
-          console.error('Search results section not found after navigation');
-        }
-      }, 300);
+    // Update search params in context
+    updateSearchParams({
+      location: searchLocation,
+      propertyType: propertyType
+    });
+    
+    // Scroll to search results
+    const searchResultsElement = document.getElementById('search-results');
+    if (searchResultsElement) {
+      searchResultsElement.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   const handleLocationClick = (locationName) => {
     setSearchLocation(locationName);
+    
+    // Track the search action
+    trackSearch({
+      location: locationName,
+      propertyType: propertyType
+    });
     
     // Update search params in context
     updateSearchParams({ 

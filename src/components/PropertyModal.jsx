@@ -11,6 +11,7 @@ import { FaLocationDot, FaX } from "react-icons/fa6";
 import { handleImageError } from "../utils/imageUtils";
 import SEO from "./SEO";
 import LazyImage from './LazyImage';
+import { trackPropertyView, trackWhatsAppClick } from './Analytics';
 
 const PropertyModal = ({ onClose, properties }) => {
   const [currentPropertyIndex, setCurrentPropertyIndex] = useState(0);
@@ -25,6 +26,13 @@ const PropertyModal = ({ onClose, properties }) => {
     ? currentProperty.images 
     : [currentProperty.image || 'https://placehold.co/600x400'];
 
+  // Track property view when modal opens
+  useEffect(() => {
+    if (currentProperty) {
+      trackPropertyView(currentProperty);
+    }
+  }, [currentProperty]);
+
   const phoneNumber = "50688664708";
   const message = `Hello, I'm interested in the property: ${currentProperty.title} - ${currentProperty.location}. Price: ${currentProperty.price}`;
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -35,6 +43,10 @@ const PropertyModal = ({ onClose, properties }) => {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleWhatsAppClick = () => {
+    trackWhatsAppClick(currentProperty);
   };
 
   // Create SEO title and description for the property
@@ -134,6 +146,7 @@ const PropertyModal = ({ onClose, properties }) => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
             className="w-full bg-[#7dc138] text-white py-3 rounded-2xl font-semibold hover:bg-[#7dc138]/90 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2 transform"
           >
             <FaWhatsapp className="text-xl" />

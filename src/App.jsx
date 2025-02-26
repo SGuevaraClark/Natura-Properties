@@ -3,6 +3,8 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import NaturaLogoBG from "./assets/naturalogoBG.png";
 import { SearchProvider } from './context/SearchContext';
 import SEO from './components/SEO';
+import Analytics from './components/Analytics';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Eagerly loaded components (visible above the fold)
 import Contact from "./components/Contact.jsx";
@@ -52,63 +54,66 @@ function App() {
   }, []);
 
   return (
-    <SearchProvider>
-      <ScrollToTop />
-      <div className="min-h-screen w-full bg-gray-50">
-        {/* Default SEO for the home page */}
-        {location.pathname === '/' && (
-          <SEO 
-            title="Natura Properties | Real Estate in Costa Rica"
-            description="Find your dream property in Costa Rica with Natura Properties. Explore our exclusive listings of homes, lots, and investment opportunities."
-          />
-        )}
-        
-        {/* SEO for the privacy policy page */}
-        {location.pathname === '/privacy-policy' && (
-          <SEO 
-            title="Privacy Policy | Natura Properties"
-            description="Learn about how Natura Properties collects and protects your personal information."
-          />
-        )}
-        
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          </Routes>
-        </Suspense>
-
-        {/* Only show these components on the home page */}
-        {location.pathname === '/' && (
-          <>
-            <Suspense fallback={<LoadingSpinner />}>
-              <FeaturedProperties setSelectedProperty={setSelectedProperty} />
-            </Suspense>
-            
-            <Suspense fallback={<LoadingSpinner />}>
-              <AllProperties setSelectedProperty={setSelectedProperty} />
-            </Suspense>
-            
-            <Suspense fallback={<LoadingSpinner />}>
-              <SearchResults setSelectedProperty={setSelectedProperty} />
-            </Suspense>
-          </>
-        )}
-
-        {/* Show these components on all pages */}
-        <Contact />
-        <Footer />
-
-        {selectedProperty && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <PropertyModal
-              properties={[selectedProperty]}
-              onClose={() => setSelectedProperty(null)}
+    <ErrorBoundary>
+      <SearchProvider>
+        <ScrollToTop />
+        <Analytics />
+        <div className="min-h-screen w-full bg-gray-50">
+          {/* Default SEO for the home page */}
+          {location.pathname === '/' && (
+            <SEO 
+              title="Natura Properties | Real Estate in Costa Rica"
+              description="Find your dream property in Costa Rica with Natura Properties. Explore our exclusive listings of homes, lots, and investment opportunities."
             />
+          )}
+          
+          {/* SEO for the privacy policy page */}
+          {location.pathname === '/privacy-policy' && (
+            <SEO 
+              title="Privacy Policy | Natura Properties"
+              description="Learn about how Natura Properties collects and protects your personal information."
+            />
+          )}
+          
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            </Routes>
           </Suspense>
-        )}
-      </div>
-    </SearchProvider>
+
+          {/* Only show these components on the home page */}
+          {location.pathname === '/' && (
+            <>
+              <Suspense fallback={<LoadingSpinner />}>
+                <FeaturedProperties setSelectedProperty={setSelectedProperty} />
+              </Suspense>
+              
+              <Suspense fallback={<LoadingSpinner />}>
+                <AllProperties setSelectedProperty={setSelectedProperty} />
+              </Suspense>
+              
+              <Suspense fallback={<LoadingSpinner />}>
+                <SearchResults setSelectedProperty={setSelectedProperty} />
+              </Suspense>
+            </>
+          )}
+
+          {/* Show these components on all pages */}
+          <Contact />
+          <Footer />
+
+          {selectedProperty && (
+            <Suspense fallback={<LoadingSpinner />}>
+              <PropertyModal
+                properties={[selectedProperty]}
+                onClose={() => setSelectedProperty(null)}
+              />
+            </Suspense>
+          )}
+        </div>
+      </SearchProvider>
+    </ErrorBoundary>
   );
 }
 
