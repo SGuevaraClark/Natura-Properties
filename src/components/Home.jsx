@@ -2,35 +2,10 @@ import React, { useState } from "react";
 import naturaLogoWide from "../assets/naturaLogoWide.png";
 import backgroundVideo from "../assets/background-video.mp4";
 import homeImage from "../assets/homeImage.jpg";
-import { FaLocationDot } from "react-icons/fa6";
-import { useSearch } from "../context/SearchContext";
+import SearchForm from "./SearchForm";
 
 const Home = () => {
-  const { updateSearchParams } = useSearch();
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  const [location, setLocation] = useState('');
-  const [propertyType, setPropertyType] = useState('');
-
-  const handleSearch = () => {
-    updateSearchParams({ location, propertyType });
-    
-    // Scroll to the search results section
-    const searchResultsSection = document.getElementById('search-results');
-    if (searchResultsSection) {
-      searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleLocationClick = (locationName) => {
-    setLocation(locationName);
-    updateSearchParams({ location: locationName, propertyType });
-    
-    // Scroll to the search results section
-    const searchResultsSection = document.getElementById('search-results');
-    if (searchResultsSection) {
-      searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <div className="relative h-[100vh]">
@@ -76,60 +51,10 @@ const Home = () => {
           </p>
 
           <div className="bg-white/30 p-8 rounded-3xl shadow-2xl backdrop-blur-md max-w-2xl mx-auto">
-            <div className="flex flex-col md:flex-row gap-3">
-              <input
-                type="text"
-                placeholder="Search by Location"
-                className="flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138] hover:border-[#7dc138] hover:bg-[#7dc138]/5 focus:bg-white text-black transition-colors duration-200"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-
-              <select 
-                className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]"
-                value={propertyType}
-                onChange={(e) => setPropertyType(e.target.value)}
-              >
-                <option value="">All Types</option>
-                <option value="lot">Lots</option>
-                <option value="house">Houses</option>
-                <option value="apartment">Apartments</option>
-                <option value="hotel">Hotels</option>
-              </select>
-
-              <button 
-                className="bg-[#7dc138] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-colors"
-                onClick={handleSearch}
-              >
-                Search
-              </button>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3 mt-6">
-              <div 
-                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-                onClick={() => handleLocationClick("San José")}
-              >
-                <FaLocationDot className="text-[#7dc138] mb-2" />
-                <span className="font-semibold text-white">San José</span>
-              </div>
-
-              <div 
-                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-                onClick={() => handleLocationClick("Guanacaste")}
-              >
-                <FaLocationDot className="text-[#7dc138] mb-2" />
-                <span className="font-semibold text-white">Guanacaste</span>
-              </div>
-
-              <div 
-                className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-                onClick={() => handleLocationClick("Puntarenas")}
-              >
-                <FaLocationDot className="text-[#7dc138] mb-2" />
-                <span className="font-semibold text-white">Puntarenas</span>
-              </div>
-            </div>
+            <SearchForm 
+              heroStyle={true} 
+              showLocationButtons={true}
+            />
           </div>
         </div>
       </div>

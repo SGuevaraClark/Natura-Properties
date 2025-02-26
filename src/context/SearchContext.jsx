@@ -15,6 +15,7 @@ export const SearchProvider = ({ children }) => {
 
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [allProperties, setAllProperties] = useState([]);
 
   // Fetch all properties once when the component mounts
@@ -49,9 +50,11 @@ export const SearchProvider = ({ children }) => {
           }));
           
           setAllProperties(propertiesWithImages);
+          console.log('Fetched all properties:', propertiesWithImages.length);
         }
       } catch (error) {
         console.error('Error fetching all properties:', error);
+        setError('Failed to load properties. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -62,6 +65,8 @@ export const SearchProvider = ({ children }) => {
 
   // Update search params and perform search
   const updateSearchParams = (newParams) => {
+    console.log('Updating search params:', newParams);
+    
     // Normalize parameters
     const updatedParams = {
       location: newParams.location || '',
@@ -75,11 +80,14 @@ export const SearchProvider = ({ children }) => {
 
   // Perform search using the cached properties
   const performSearch = (params = searchParams) => {
+    console.log('Performing search with params:', params);
     setLoading(true);
+    setError(null);
     
     try {
       // If no search criteria, return empty results
       if (!params.location && (!params.propertyType || params.propertyType === 'All')) {
+        console.log('No search criteria provided, returning empty results');
         setSearchResults([]);
         setLoading(false);
         return;
@@ -109,9 +117,11 @@ export const SearchProvider = ({ children }) => {
         return locationMatch && typeMatch;
       });
       
+      console.log('Search results:', filtered.length);
       setSearchResults(filtered);
     } catch (error) {
       console.error('Error performing search:', error);
+      setError('An error occurred while searching. Please try again.');
       setSearchResults([]);
     } finally {
       setLoading(false);
@@ -124,6 +134,7 @@ export const SearchProvider = ({ children }) => {
         searchParams, 
         searchResults, 
         loading, 
+        error,
         updateSearchParams, 
         performSearch,
         allProperties
