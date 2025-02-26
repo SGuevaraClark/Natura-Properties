@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import NaturaLogoBG from "./assets/naturalogoBG.png";
 import { Routes, Route } from 'react-router-dom';
 import SearchPage from './pages/SearchPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { SearchProvider } from './context/SearchContext';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/properties/search" element={<SearchPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         </Routes>
 
         <FeaturedProperties setSelectedProperty={setSelectedProperty} />
