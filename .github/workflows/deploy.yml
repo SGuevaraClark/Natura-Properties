@@ -26,6 +26,11 @@ jobs:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
           VITE_FB_PIXEL_ID: ${{ secrets.VITE_FB_PIXEL_ID }}
           VITE_ENABLE_ANALYTICS: "true"
+      - name: Debug Env Variables
+        run: |
+          echo "API URL prefix: ${VITE_API_URL:0:15}..." # Show just the beginning for security
+          echo "GA Measurement ID set: $([[ -n $VITE_GA_MEASUREMENT_ID ]] && echo 'Yes' || echo 'No')"
+          echo "FB Pixel ID set: $([[ -n $VITE_FB_PIXEL_ID ]] && echo 'Yes' || echo 'No')"
 
       - name: Deploy with rsync
         uses: burnett01/rsync-deployments@6.0.0
