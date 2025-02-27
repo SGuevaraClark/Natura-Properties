@@ -28,7 +28,7 @@ jobs:
           VITE_ENABLE_ANALYTICS: "true"
       - name: Debug Env Variables
         run: |
-          echo "API URL prefix: ${VITE_API_URL:0:15}..." # Show just the beginning for security
+          echo "API URL prefix: ${VITE_API_URL:0:15}..."
           echo "GA Measurement ID set: $([[ -n $VITE_GA_MEASUREMENT_ID ]] && echo 'Yes' || echo 'No')"
           echo "FB Pixel ID set: $([[ -n $VITE_FB_PIXEL_ID ]] && echo 'Yes' || echo 'No')"
 
