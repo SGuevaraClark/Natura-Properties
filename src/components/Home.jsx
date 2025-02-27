@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import naturaLogoWide from "../assets/naturaLogoWide.png";
-import backgroundVideo from "../assets/background-video.mp4";
+import backgroundVideo from "../assets/background-video.webm";
 import homeImage from "../assets/homeImage.jpg";
 import SearchForm from "./SearchForm";
 import { handleImageError } from "../utils/imageUtils";
@@ -31,7 +31,7 @@ const Home = () => {
         }`}
         preload="auto"
       >
-        <source src={backgroundVideo} type="video/mp4" />
+        <source src={backgroundVideo} type="video/webm" />
       </video>
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/30 to-black/50 flex items-center justify-center">
