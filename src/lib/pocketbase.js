@@ -1,7 +1,7 @@
 import PocketBase from 'pocketbase';
 
 // Initialize PocketBase client
-export const pb = new PocketBase('http://127.0.0.1:8090');
+export const pb = new PocketBase(import.meta.env.VITE_API_URL);
 
 // Optional: Add auth state change listener
 pb.authStore.onChange((auth) => {

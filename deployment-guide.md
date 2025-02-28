@@ -136,25 +136,22 @@ The website files are in the GitHub repository, so a full backup is maintained t
 ### Caddy Configuration
 
 ```
-naturaproperties.com {
+http://naturaproperties.com {
     root * /var/www/natura/dist
     encode gzip
-    
-    # Handle API proxying to PocketBase
+
+    # Forward API requests to PocketBase
     handle /api/* {
-        uri strip_prefix /api
-        reverse_proxy localhost:8090
+        reverse_proxy [::1]:8090
     }
-    
+
     # Handle all frontend routes
     handle {
         try_files {path} /index.html
     }
-    
+
     # Add security headers
     header {
-        # Enable HSTS
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         # Prevent clickjacking
         X-Frame-Options "SAMEORIGIN"
         # XSS protection
@@ -163,7 +160,7 @@ naturaproperties.com {
         # Referrer policy
         Referrer-Policy "strict-origin-when-cross-origin"
     }
-    
+
     # Log requests
     log {
         output file /var/log/caddy/naturaproperties.log
@@ -211,8 +208,10 @@ The website uses Cloudflare for DNS management, CDN, and security features:
 - **Always Use HTTPS**: On
 
 For SSH access, use the server's IP address directly:
+
 ```bash
 ssh -i ~/.ssh/id_rsa root@116.203.198.232
+ssh -i ~/.ssh/natura_deploy_key root@116.203.198.232
 ```
 
 ## Troubleshooting
