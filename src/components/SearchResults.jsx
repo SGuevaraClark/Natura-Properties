@@ -1,18 +1,25 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { SearchContext } from '../context/SearchContext';
-import PocketBase from 'pocketbase';
 import { FaBath, FaBed, FaRuler } from "react-icons/fa";
-import { FaLocationDot } from "react-icons/fa6";
-import { handleImageError } from "../utils/imageUtils";
-import LazyImage from './LazyImage';
-
-const pb = new PocketBase(import.meta.env.VITE_API_URL);
+import { FaLocationDot, FaWhatsapp } from "react-icons/fa6";
+import PropertyCarousel from './PropertyCarousel';
 
 const SearchResults = ({ setSelectedProperty }) => {
-  const { searchResults, loading, error, searchParams } = useContext(SearchContext);
+  const { searchResults, loading, error, hasSearched } = useContext(SearchContext);
 
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
+    // Track property view if analytics is available
+    if (window.trackPropertyView) {
+      window.trackPropertyView(property);
+    }
+  };
+
+  // Function to open WhatsApp with a predefined message
+  const openWhatsApp = () => {
+    const message = "Hello, I'm looking for a property in Costa Rica. Can you help me?";
+    const whatsappUrl = `https://wa.me/50688767574?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   // Function to format price correctly (remove $ if it already exists in the string)
@@ -36,9 +43,9 @@ const SearchResults = ({ setSelectedProperty }) => {
       .join(' ');
   };
 
-  // If no search has been performed yet (both location and propertyType are empty)
-  if (!searchParams.location && searchParams.propertyType === 'All' && searchResults.length === 0 && !loading && !error) {
-    return null; // Don't show anything if no search has been performed
+  // If there are no search results or they haven't searched yet, don't render anything
+  if (!hasSearched) {
+    return <div id="search-results"></div>; // Empty div with ID for scrolling
   }
 
   if (loading) {
@@ -54,21 +61,31 @@ const SearchResults = ({ setSelectedProperty }) => {
 
   if (error) {
     return (
-      <div id="search-results" className="text-center py-10 text-red-500">
+      <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
         <h2 className="text-3xl font-bold mb-8">Search Results</h2>
-        <p>{error}</p>
+        <div className="text-center py-10 text-red-500">{error}</div>
       </div>
     );
   }
 
+  // Display a helpful message when no results are found
   if (!searchResults || searchResults.length === 0) {
     return (
       <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
         <h2 className="text-3xl font-bold mb-8">Search Results</h2>
-        <div className="text-center py-10 text-gray-500">
-          No properties found matching your search criteria.
-          {searchParams.location && <p className="mt-2">Location: {searchParams.location}</p>}
-          {searchParams.propertyType !== 'All' && <p className="mt-2">Property Type: {searchParams.propertyType}</p>}
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <h3 className="text-2xl font-semibold mb-4 text-gray-800">No properties found</h3>
+          <p className="text-gray-600 mb-6">
+            We're working hard to upload all our properties to our website. 
+            Meanwhile, our agents can help you find exactly what you're looking for.
+          </p>
+          <button 
+            onClick={openWhatsApp}
+            className="inline-flex items-center px-6 py-3 bg-[#25D366] text-white font-medium rounded-md shadow-md hover:bg-[#20BD5C] transition-all duration-300 hover:shadow-lg"
+          >
+            <FaWhatsapp className="mr-2 text-xl" />
+            Contact us on WhatsApp
+          </button>
         </div>
       </div>
     );
@@ -77,7 +94,6 @@ const SearchResults = ({ setSelectedProperty }) => {
   return (
     <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
       <h2 className="text-3xl font-bold mb-8">Search Results</h2>
-      <p className="mb-8 text-gray-600">Found {searchResults.length} properties matching your search criteria.</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {searchResults.map((property) => (
@@ -86,24 +102,12 @@ const SearchResults = ({ setSelectedProperty }) => {
             className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 group"
             onClick={() => handlePropertyClick(property)}
           >
-            <div className="relative h-64 overflow-hidden">
-              <LazyImage 
-                src={property.image} 
-                alt={property.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              {property.featured && (
-                <div className="absolute top-4 left-4 bg-[#7dc138] text-white px-3 py-1 rounded-full text-sm font-medium">
-                  Featured
-                </div>
-              )}
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                <h3 className="text-white text-xl font-bold relative inline-block">
-                  {property.title}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#7dc138] transition-all duration-300 group-hover:w-full"></span>
-                </h3>
-              </div>
-            </div>
+            {/* Property carousel with title included */}
+            <PropertyCarousel 
+              images={property.images} 
+              title={property.title}
+              featured={property.featured}
+            />
             
             <div className="p-4">
               <div className="flex justify-between items-center mb-2">
@@ -115,7 +119,7 @@ const SearchResults = ({ setSelectedProperty }) => {
               
               <div className="flex items-center mb-4 text-gray-600">
                 <FaLocationDot className="mr-2 text-[#7dc138]" />
-                <span>{property.location}</span>
+                <span className="hover:underline">{property.location}</span>
               </div>
               
               <div className="flex justify-between text-gray-600">

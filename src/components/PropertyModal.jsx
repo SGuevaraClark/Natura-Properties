@@ -55,7 +55,7 @@ const PropertyModal = ({ onClose, properties }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4 overflow-y-auto"
       onClick={onClose}
     >
       {/* Dynamic SEO for the current property */}
@@ -67,10 +67,10 @@ const PropertyModal = ({ onClose, properties }) => {
       />
       
       <div
-        className="relative bg-white rounded-3xl max-w-xl w-full md:max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="relative bg-white rounded-3xl max-w-xl w-full max-h-[90vh] md:max-h-[90vh] overflow-y-auto shadow-2xl my-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative h-[300px] md:h-[400px]">
+        <div className="relative h-[250px] sm:h-[300px] md:h-[400px]">
           <LazyImage
             src={images[currentImageIndex]}
             alt={currentProperty.title || "Property image"}

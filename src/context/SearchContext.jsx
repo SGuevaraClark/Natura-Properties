@@ -18,6 +18,7 @@ export const SearchProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [allProperties, setAllProperties] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Fetch all properties once when the component mounts
   useEffect(() => {
@@ -62,6 +63,17 @@ export const SearchProvider = ({ children }) => {
     fetchAllProperties();
   }, []);
 
+  // Function to scroll to search results
+  const scrollToSearchResults = () => {
+    // Add a small delay to ensure the component is rendered
+    setTimeout(() => {
+      const searchResultsElement = document.getElementById('search-results');
+      if (searchResultsElement) {
+        searchResultsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   // Update search params and perform search
   const updateSearchParams = (newParams) => {
     console.log('Updating search params:', newParams);
@@ -78,52 +90,92 @@ export const SearchProvider = ({ children }) => {
   };
 
   // Perform search using the cached properties
-  const performSearch = (params = searchParams) => {
-    console.log('Performing search with params:', params);
+  const performSearch = async (params = searchParams) => {
+    // If no search criteria provided, don't perform search
+    if (!params.location && params.propertyType === 'All') {
+      console.log('No search criteria provided, returning empty results');
+      setSearchResults([]);
+      setHasSearched(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     
     try {
-      // If no search criteria, return empty results
-      if (!params.location && (!params.propertyType || params.propertyType === 'All')) {
-        console.log('No search criteria provided, returning empty results');
-        setSearchResults([]);
-        setLoading(false);
-        return;
+      let filter = [];
+      
+      // Add location filter if provided
+      if (params.location) {
+        filter.push(`location ~ "${params.location}"`);
       }
       
-      // Filter properties based on search params
-      const filtered = allProperties.filter(property => {
-        // Match location (if provided)
-        let locationMatch = true;
-        
-        if (params.location && params.location.trim() !== '') {
-          const searchLocation = params.location.trim().toLowerCase();
-          
-          // Check if property location contains the search term
-          locationMatch = property.location && 
-                         property.location.toLowerCase().includes(searchLocation);
-        }
-        
-        // Match property type (if not 'All')
-        let typeMatch = true;
-        
-        if (params.propertyType && params.propertyType !== 'All') {
-          typeMatch = property.propertyType && 
-                     property.propertyType.toLowerCase() === params.propertyType.toLowerCase();
-        }
-        
-        return locationMatch && typeMatch;
+      // Add property type filter if not "All"
+      if (params.propertyType !== 'All') {
+        filter.push(`propertyType = "${params.propertyType}"`);
+      }
+      
+      // Combine filters with AND operator
+      const filterString = filter.join(' && ');
+      
+      const records = await pb.collection('properties').getList(1, 100, {
+        filter: filterString,
+        sort: '-created',
+        $autoCancel: false
       });
       
-      console.log('Search results:', filtered.length);
-      setSearchResults(filtered);
+      if (records && records.items) {
+        const propertiesWithImages = records.items.map(property => {
+          // Create an array of image URLs, starting with the main image
+          let allImages = [];
+          
+          // Add main image if it exists
+          if (property.image) {
+            allImages.push(pb.files.getURL(property, property.image));
+          }
+          
+          // Add additional images if they exist
+          if (property.images && Array.isArray(property.images)) {
+            const additionalImages = property.images.map(img => pb.files.getURL(property, img));
+            allImages = [...allImages, ...additionalImages];
+          }
+          
+          // If no images at all, use placeholder
+          if (allImages.length === 0) {
+            allImages = ['https://placehold.co/600x400'];
+          }
+          
+          return {
+            id: property.id,
+            title: property.title || 'No Title',
+            price: property.price || 'Price not set',
+            location: property.location || 'Location not specified',
+            beds: property.beds || 0,
+            baths: property.baths || 0,
+            m2: property.m2 || 0,
+            featured: property.featured || false,
+            description: property.description || 'No description',
+            propertyType: property.propertyType || '',
+            type: property.type || 'Not specified',
+            image: property.image 
+              ? pb.files.getURL(property, property.image) 
+              : 'https://placehold.co/600x400',
+            images: allImages
+          };
+        });
+        
+        setSearchResults(propertiesWithImages);
+        console.log('Search results:', propertiesWithImages.length);
+        
+        // Scroll to search results after they're loaded
+        scrollToSearchResults();
+      }
     } catch (error) {
       console.error('Error performing search:', error);
-      setError('An error occurred while searching. Please try again.');
-      setSearchResults([]);
+      setError('Failed to perform search. Please try again.');
     } finally {
       setLoading(false);
+      setHasSearched(true);
     }
   };
 
@@ -136,7 +188,8 @@ export const SearchProvider = ({ children }) => {
         error,
         updateSearchParams, 
         performSearch,
-        allProperties
+        allProperties,
+        hasSearched
       }}
     >
       {children}
