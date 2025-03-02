@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PocketBase from 'pocketbase';
-import { FaBath, FaBed, FaHeart, FaRuler } from "react-icons/fa";
+import { FaBath, FaBed, FaRuler } from "react-icons/fa";
 import { FaLocationDot } from "react-icons/fa6";
-import { handleImageError } from "../utils/imageUtils";
-import LazyImage from './LazyImage';
+import PropertyCarousel from './PropertyCarousel';
 
 const pb = new PocketBase(import.meta.env.VITE_API_URL);
 
@@ -24,30 +23,52 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
         });
         
         if (records && records.items) {
-          const propertiesWithImages = records.items.map(property => ({
-            id: property.id,
-            title: property.title || 'No Title',
-            price: property.price || 'Price not set',
-            location: property.location || 'Location not specified',
-            beds: property.beds || 0,
-            baths: property.baths || 0,
-            m2: property.m2 || 0,
-            featured: property.featured || false,
-            description: property.description || 'No description',
-            propertyType: property.propertyType || '',
-            type: property.type || 'Not specified',
-            image: property.image 
-              ? pb.files.getURL(property, property.image) 
-              : 'https://placehold.co/600x400',
-            images: property.images && Array.isArray(property.images)
-              ? property.images.map(img => pb.files.getURL(property, img))
-              : []
-          }));
+          const propertiesWithImages = records.items.map(property => {
+            // Create an array of image URLs, starting with the main image
+            let allImages = [];
+            
+            // Add main image if it exists
+            if (property.image) {
+              allImages.push(pb.files.getURL(property, property.image));
+            }
+            
+            // Add additional images if they exist
+            if (property.images && Array.isArray(property.images)) {
+              const additionalImages = property.images.map(img => pb.files.getURL(property, img));
+              allImages = [...allImages, ...additionalImages];
+            }
+            
+            // If no images at all, use placeholder
+            if (allImages.length === 0) {
+              allImages = ['https://placehold.co/600x400'];
+            }
+            
+            return {
+              id: property.id,
+              title: property.title || 'No Title',
+              price: property.price || 'Price not set',
+              location: property.location || 'Location not specified',
+              beds: property.beds || 0,
+              baths: property.baths || 0,
+              m2: property.m2 || 0,
+              featured: property.featured || false,
+              description: property.description || 'No description',
+              propertyType: property.propertyType || '',
+              type: property.type || 'Not specified',
+              // Keep the main image for compatibility
+              image: property.image 
+                ? pb.files.getURL(property, property.image) 
+                : 'https://placehold.co/600x400',
+              // Store all images for the carousel
+              images: allImages
+            };
+          });
           
           setProperties(propertiesWithImages);
         }
       } catch (error) {
         console.error('Error fetching featured properties:', error);
+        setError('Failed to load properties. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -58,6 +79,10 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
 
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
+    // Track property view if analytics is available
+    if (window.trackPropertyView) {
+      window.trackPropertyView(property);
+    }
   };
 
   // Function to format price correctly (remove $ if it already exists in the string)
@@ -111,22 +136,12 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
             className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 group"
             onClick={() => handlePropertyClick(property)}
           >
-            <div className="relative h-64 overflow-hidden">
-              <LazyImage 
-                src={property.image} 
-                alt={property.title} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              />
-              <div className="absolute top-4 left-4 bg-[#7dc138] text-white px-3 py-1 rounded-full text-sm font-medium">
-                Featured
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                <h3 className="text-white text-xl font-bold relative inline-block">
-                  {property.title}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#7dc138] transition-all duration-300 group-hover:w-full"></span>
-                </h3>
-              </div>
-            </div>
+            {/* Property carousel with title included */}
+            <PropertyCarousel 
+              images={property.images} 
+              title={property.title}
+              featured={property.featured}
+            />
             
             <div className="p-4">
               <div className="flex justify-between items-center mb-2">
@@ -138,7 +153,7 @@ const FeaturedProperties = ({ setSelectedProperty }) => {
               
               <div className="flex items-center mb-4 text-gray-600">
                 <FaLocationDot className="mr-2 text-[#7dc138]" />
-                <span>{property.location}</span>
+                <span className="hover:underline">{property.location}</span>
               </div>
               
               <div className="flex justify-between text-gray-600">
