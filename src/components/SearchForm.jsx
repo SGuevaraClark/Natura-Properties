@@ -1,199 +1,126 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useSearch } from '../context/SearchContext';
-import { FaLocationDot } from "react-icons/fa6";
-import { trackSearch } from './Analytics';
+import React, { useState, useContext } from 'react';
+import { SearchContext } from '../context/SearchContext';
+import { FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 
-const SearchForm = ({ 
-  inlineForm = false, 
-  heroStyle = false, 
-  showLocationButtons = false,
-  className = ""
-}) => {
-  const { updateSearchParams, searchParams } = useSearch();
-  const navigate = useNavigate();
-  const location = useLocation();
+const SearchForm = () => {
+  const { searchParams, updateSearchParams, performSearch } = useContext(SearchContext);
+  // Initialize with current search params from context
+  const [localParams, setLocalParams] = useState({
+    location: searchParams.location || "",
+    propertyType: searchParams.propertyType || "All"  // Default to "All" if empty
+  });
   
-  const [searchLocation, setSearchLocation] = useState('');
-  const [propertyType, setPropertyType] = useState('All');
+  // State for alert message
+  const [alertMessage, setAlertMessage] = useState("");
 
-  // Sync form state with context when searchParams changes
-  useEffect(() => {
-    setSearchLocation(searchParams.location || '');
-    setPropertyType(searchParams.propertyType || 'All');
-  }, [searchParams]);
+  // Popular locations for dropdown
+  const popularLocations = ['San José', 'Guanacaste', 'Puntarenas', 'Alajuela', 'Heredia', 'Cartago', 'Limón'];
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setLocalParams(prev => ({ ...prev, [name]: value }));
+    // Clear any existing alert when user changes selection
+    setAlertMessage("");
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Track the search action with correct variables
-    trackSearch({
-      location: searchLocation,
-      propertyType: propertyType
-    });
+    // Check if both location and property type are empty/default
+    if ((!localParams.location || localParams.location === "") && 
+        (!localParams.propertyType || localParams.propertyType === "All")) {
+      setAlertMessage("Please choose a location and property type");
+      return;
+    }
     
-    // Update search params in context
-    updateSearchParams({
-      location: searchLocation,
-      propertyType: propertyType
-    });
+    // Clear any existing alert
+    setAlertMessage("");
     
-    // Scroll to search results
-    const searchResultsElement = document.getElementById('search-results');
-    if (searchResultsElement) {
-      searchResultsElement.scrollIntoView({ behavior: 'smooth' });
+    // Make sure propertyType is never empty string
+    const paramsToSubmit = {
+      ...localParams,
+      propertyType: localParams.propertyType || "All"
+    };
+    
+    // Update context with local values
+    updateSearchParams(paramsToSubmit);
+    
+    // Perform the search with local values
+    performSearch(paramsToSubmit);
+    
+    // Track search if analytics is available
+    if (window.trackSearch) {
+      window.trackSearch(paramsToSubmit);
     }
   };
 
-  const handleLocationClick = (locationName) => {
-    setSearchLocation(locationName);
-    
-    // Track the search action
-    trackSearch({
-      location: locationName,
-      propertyType: propertyType
-    });
-    
-    // Update search params in context
-    updateSearchParams({ 
-      location: locationName, 
-      propertyType: propertyType 
-    });
-    
-    // Scroll to search results section
-    setTimeout(() => {
-      const searchResultsSection = document.getElementById('search-results');
-      if (searchResultsSection) {
-        searchResultsSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 100);
-  };
-
-  // Common locations in Costa Rica that users might search for
-  const commonLocations = [
-    "All Locations",
-    "Santa Ana", 
-    "Escazú", 
-    "Belén", 
-    "Nosara",
-    "San José",
-    "Guanacaste",
-    "Puntarenas"
-  ];
-
-  // Hero style form (for home page hero section)
-  if (heroStyle) {
-    return (
-      <div className={`${className}`}>
-        <div className="flex flex-col md:flex-row gap-3">
-          <select
-            className="flex-1 px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]"
-            value={searchLocation}
-            onChange={(e) => setSearchLocation(e.target.value)}
+  return (
+    <div className="bg-transparent p-4 rounded-lg max-w-4xl mx-auto">
+      {alertMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 relative">
+          <span className="block sm:inline">{alertMessage}</span>
+        </div>
+      )}
+      
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="location" className="block text-white text-lg font-medium mb-1">
+              Location
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaMapMarkerAlt className="text-gray-500" />
+              </div>
+              <select
+                id="location"
+                name="location"
+                value={localParams.location}
+                onChange={handleInputChange}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7dc138] focus:border-transparent bg-white text-gray-800 font-medium"
+              >
+                <option value="">All Locations</option>
+                {popularLocations.map(location => (
+                  <option key={location} value={location}>{location}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label htmlFor="propertyType" className="block text-white text-lg font-medium mb-1">
+              Property Type
+            </label>
+            <select
+              id="propertyType"
+              name="propertyType"
+              value={localParams.propertyType || "All"}
+              onChange={handleInputChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#7dc138] focus:border-transparent bg-white text-gray-800 font-medium"
+            >
+              <option value="All">All Types</option>
+              <option value="house">House</option>
+              <option value="apartment">Apartment</option>
+              <option value="lot">Lot</option>
+              <option value="hotel">Hotel</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="flex justify-center pt-2">
+          <button
+            type="submit"
+            className="bg-[#7dc138] text-white py-2 px-6 rounded-md font-medium 
+                     transition-all duration-300 hover:bg-[#6aaf25] hover:shadow-lg 
+                     transform hover:-translate-y-1 active:translate-y-0 active:shadow-md
+                     flex items-center justify-center"
           >
-            <option value="">All Locations</option>
-            {commonLocations.slice(1).map((loc, index) => (
-              <option key={index} value={loc}>{loc}</option>
-            ))}
-          </select>
-
-          <select 
-            className="px-4 py-3 rounded-lg text-gray-700 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#7dc138]"
-            value={propertyType}
-            onChange={(e) => setPropertyType(e.target.value)}
-          >
-            <option value="All">All Types</option>
-            <option value="lot">Lots</option>
-            <option value="house">Houses</option>
-            <option value="apartment">Apartments</option>
-            <option value="hotel">Hotels</option>
-          </select>
-
-          <button 
-            className="bg-[#7dc138] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#7dc138]/90 transition-colors"
-            onClick={handleSubmit}
-          >
+            <FaSearch className="mr-2" />
             Search
           </button>
         </div>
-
-        {showLocationButtons && (
-          <div className="grid grid-cols-3 gap-3 mt-6">
-            <div 
-              className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-              onClick={() => handleLocationClick("San José")}
-            >
-              <FaLocationDot className="text-[#7dc138] mb-2" />
-              <span className="font-semibold text-white">San José</span>
-            </div>
-
-            <div 
-              className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-              onClick={() => handleLocationClick("Guanacaste")}
-            >
-              <FaLocationDot className="text-[#7dc138] mb-2" />
-              <span className="font-semibold text-white">Guanacaste</span>
-            </div>
-
-            <div 
-              className="flex flex-col p-3 items-center bg-slate-50/20 rounded-lg transition-transform hover:scale-105 cursor-pointer"
-              onClick={() => handleLocationClick("Puntarenas")}
-            >
-              <FaLocationDot className="text-[#7dc138] mb-2" />
-              <span className="font-semibold text-white">Puntarenas</span>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Standard form (for other parts of the app)
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className={`${inlineForm ? 'flex-row items-end' : 'mt-3 mx-auto flex flex-col md:flex-row items-center'} ${className}`}
-    >
-      <div className="w-full md:w-3/5 md:pr-2 mb-4 md:mb-0">
-        <label htmlFor="location" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
-          Location
-        </label>
-        <select
-          id="location"
-          className="w-full px-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring focus:ring-blue-500"
-          value={searchLocation}
-          onChange={(e) => setSearchLocation(e.target.value)}
-        >
-          <option value="">All Locations</option>
-          {commonLocations.slice(1).map((loc, index) => (
-            <option key={index} value={loc}>{loc}</option>
-          ))}
-        </select>
-      </div>
-      <div className="w-full md:w-2/5 md:px-2">
-        <label htmlFor="propertyType" className={inlineForm ? "block text-sm font-medium mb-1" : "sr-only"}>
-          Property Type
-        </label>
-        <select
-          id="propertyType"
-          className="w-full px-4 py-3 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring focus:ring-blue-500"
-          value={propertyType}
-          onChange={(e) => setPropertyType(e.target.value)}
-        >
-          <option value="All">All Properties</option>
-          <option value="house">House</option>
-          <option value="lot">Lot</option>
-          <option value="apartment">Apartment</option>
-          <option value="hotel">Hotel</option>
-        </select>
-      </div>
-      <button
-        type="submit"
-        className="md:ml-4 mt-4 md:mt-0 w-full md:w-auto px-6 py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-500"
-      >
-        Search
-      </button>
-    </form>
+      </form>
+    </div>
   );
 };
 

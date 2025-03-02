@@ -90,11 +90,11 @@ function App() {
               </Suspense>
               
               <Suspense fallback={<LoadingSpinner />}>
-                <AllProperties setSelectedProperty={setSelectedProperty} />
+                <SearchResults setSelectedProperty={setSelectedProperty} />
               </Suspense>
               
               <Suspense fallback={<LoadingSpinner />}>
-                <SearchResults setSelectedProperty={setSelectedProperty} />
+                <AllProperties setSelectedProperty={setSelectedProperty} />
               </Suspense>
             </>
           )}

@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import { SearchContext } from '../context/SearchContext';
 import { FaBath, FaBed, FaRuler } from "react-icons/fa";
-import { FaLocationDot } from "react-icons/fa6";
+import { FaLocationDot, FaWhatsapp } from "react-icons/fa6";
 import PropertyCarousel from './PropertyCarousel';
 
 const SearchResults = ({ setSelectedProperty }) => {
-  const { searchResults, loading, error } = useContext(SearchContext);
+  const { searchResults, loading, error, hasSearched } = useContext(SearchContext);
 
   const handlePropertyClick = (property) => {
     setSelectedProperty(property);
@@ -13,6 +13,13 @@ const SearchResults = ({ setSelectedProperty }) => {
     if (window.trackPropertyView) {
       window.trackPropertyView(property);
     }
+  };
+
+  // Function to open WhatsApp with a predefined message
+  const openWhatsApp = () => {
+    const message = "Hello, I'm looking for a property in Costa Rica. Can you help me?";
+    const whatsappUrl = `https://wa.me/50688767574?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   // Function to format price correctly (remove $ if it already exists in the string)
@@ -37,13 +44,13 @@ const SearchResults = ({ setSelectedProperty }) => {
   };
 
   // If there are no search results or they haven't searched yet, don't render anything
-  if (!searchResults || searchResults.length === 0) {
-    return null;
+  if (!hasSearched) {
+    return <div id="search-results"></div>; // Empty div with ID for scrolling
   }
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto py-16 px-4">
+      <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
         <h2 className="text-3xl font-bold mb-8">Search Results</h2>
         <div className="flex justify-center">
           <div className="animate-pulse text-gray-500">Searching properties...</div>
@@ -54,15 +61,38 @@ const SearchResults = ({ setSelectedProperty }) => {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto py-16 px-4">
+      <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
         <h2 className="text-3xl font-bold mb-8">Search Results</h2>
         <div className="text-center py-10 text-red-500">{error}</div>
       </div>
     );
   }
 
+  // Display a helpful message when no results are found
+  if (!searchResults || searchResults.length === 0) {
+    return (
+      <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
+        <h2 className="text-3xl font-bold mb-8">Search Results</h2>
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <h3 className="text-2xl font-semibold mb-4 text-gray-800">No properties found</h3>
+          <p className="text-gray-600 mb-6">
+            We're working hard to upload all our properties to our website. 
+            Meanwhile, our agents can help you find exactly what you're looking for.
+          </p>
+          <button 
+            onClick={openWhatsApp}
+            className="inline-flex items-center px-6 py-3 bg-[#25D366] text-white font-medium rounded-md shadow-md hover:bg-[#20BD5C] transition-all duration-300 hover:shadow-lg"
+          >
+            <FaWhatsapp className="mr-2 text-xl" />
+            Contact us on WhatsApp
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-7xl mx-auto py-16 px-4">
+    <div id="search-results" className="max-w-7xl mx-auto py-16 px-4">
       <h2 className="text-3xl font-bold mb-8">Search Results</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
