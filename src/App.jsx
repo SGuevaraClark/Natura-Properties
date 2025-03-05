@@ -5,6 +5,8 @@ import { SearchProvider } from './context/SearchContext';
 import SEO from './components/SEO';
 import Analytics from './components/Analytics';
 import ErrorBoundary from './components/ErrorBoundary';
+import TagManager from 'react-gtm-module';
+import Navbar from './components/Navbar';
 
 // Eagerly loaded components (visible above the fold)
 import Contact from "./components/Contact.jsx";
@@ -51,6 +53,13 @@ function App() {
       newFavicon.href = NaturaLogoBG;
       document.head.appendChild(newFavicon);
     }
+  }, []);
+
+  useEffect(() => {
+    // Initialize Google Tag Manager
+    TagManager.initialize({
+      gtmId: 'GTM-N28BBW5L'
+    });
   }, []);
 
   return (
