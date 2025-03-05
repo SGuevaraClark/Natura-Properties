@@ -6,7 +6,6 @@ import SEO from './components/SEO';
 import Analytics from './components/Analytics';
 import ErrorBoundary from './components/ErrorBoundary';
 import TagManager from 'react-gtm-module';
-import Navbar from './components/Navbar';
 
 // Eagerly loaded components (visible above the fold)
 import Contact from "./components/Contact.jsx";
